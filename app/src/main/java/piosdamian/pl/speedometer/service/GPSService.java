@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,8 +20,9 @@ import java.util.TimerTask;
 
 public class GPSService extends Service implements LocationListener {
     public static final String RECEIVER = "piosdamian.pl.receiver";
-    public static final long NOTIFY_INTERVAL = 1000;
+    public static final long NOTIFY_INTERVAL = 1500;
     public static final String DISTANCE = "distance";
+    private static final String provider = LocationManager.GPS_PROVIDER;
 
     private LocationManager locationManager;
     private Location location, lastLocation;
@@ -30,6 +30,15 @@ public class GPSService extends Service implements LocationListener {
     private Timer mTimer = null;
 
     private Intent intent;
+
+    private float distance = 0;
+    private float lastDistance = 0;
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTimer.cancel();
+    }
 
     @Override
     public void onCreate() {
@@ -40,33 +49,29 @@ public class GPSService extends Service implements LocationListener {
         intent = new Intent(RECEIVER);
         location = null;
         lastLocation = null;
+
     }
 
     @SuppressLint("MissingPermission")
     private void retrieveLocation() {
         locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(provider, NOTIFY_INTERVAL, 1, this);
 
-        List<String> providers = locationManager.getProviders(true);
-        for (String provider : providers) {
-            locationManager.requestLocationUpdates(provider, NOTIFY_INTERVAL, 0, this);
-            if (locationManager != null) {
-                Location l = locationManager.getLastKnownLocation(provider);
-                if (l == null) {
-                    continue;
-                }
-                if (location == null || l.getAccuracy() < location.getAccuracy()) {
-                    location = l;
-                }
+        if (locationManager != null) {
+            Location l = locationManager.getLastKnownLocation(provider);
+            if (l != null) {
+                this.location = l;
+                update();
             }
         }
-
-        if (location != null)
-            update();
     }
 
     private void update() {
+
         if (lastLocation != null) {
-            intent.putExtra(DISTANCE, location.distanceTo(lastLocation));
+            lastDistance = distance;
+            distance = location.distanceTo(lastLocation);
+            intent.putExtra(DISTANCE, (distance + lastDistance) / 2);
             sendBroadcast(intent);
         }
         lastLocation = location;

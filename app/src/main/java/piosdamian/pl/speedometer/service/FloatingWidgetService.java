@@ -5,7 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatTextView;
@@ -15,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.RadioButton;
 
 import piosdamian.pl.speedometer.R;
 
@@ -23,10 +26,17 @@ import piosdamian.pl.speedometer.R;
  */
 
 public class FloatingWidgetService extends Service {
+    private static final String UNITS = "units";
+    private static final int DEF_PREF = -1;
+    private static final int KMH = 0;
+    private static final int MPH = 1;
+
     private WindowManager windowManager;
     private View floatingView;
     private AppCompatTextView speedTV;
-    private boolean MPH = false;
+    private int units = KMH;
+    private SharedPreferences preferences;
+    private View collapsedView, expandedView;
 
     @Nullable
     @Override
@@ -38,16 +48,39 @@ public class FloatingWidgetService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        preferences = getSharedPreferences(UNITS, MODE_PRIVATE);
+        int pref = preferences.getInt(UNITS, DEF_PREF);
+        if (pref == DEF_PREF)
+            units = KMH;
+        else
+            units = pref;
+
         startService(new Intent(getApplicationContext(), GPSService.class));
         registerReceiver(broadcastReceiver, new IntentFilter(GPSService.RECEIVER));
 
         floatingView = LayoutInflater.from(this).inflate(R.layout.activity_widget, null);
         speedTV = floatingView.findViewById(R.id.speed_tv);
 
+        RadioButton kmhBtn, mphBtn;
+        kmhBtn = floatingView.findViewById(R.id.kmh);
+        mphBtn = floatingView.findViewById(R.id.mph);
+        kmhBtn.setOnClickListener(onClickListener);
+        mphBtn.setOnClickListener(onClickListener);
+
+        if (units == KMH) {
+            kmhBtn.setChecked(true);
+            mphBtn.setChecked(false);
+        } else {
+            kmhBtn.setChecked(false);
+            mphBtn.setChecked(true);
+        }
+
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.O ?
+                        WindowManager.LayoutParams.TYPE_SYSTEM_ALERT :
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
 
@@ -55,22 +88,20 @@ public class FloatingWidgetService extends Service {
         params.x = 0;
         params.y = 100;
 
-        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         windowManager.addView(floatingView, params);
 
-        final View collapsedView = floatingView.findViewById(R.id.collapse_view);
-        final View expandedView = floatingView.findViewById(R.id.expanded_container);
+        collapsedView = floatingView.findViewById(R.id.collapse_view);
+        expandedView = floatingView.findViewById(R.id.expanded_container);
 
         ImageView closeButtonCollapsed = floatingView.findViewById(R.id.close_btn);
         closeButtonCollapsed.setOnClickListener((view) -> {
+            stopService(new Intent(getApplicationContext(), GPSService.class));
             stopSelf();
         });
 
         ImageView closeButtonExpanded = floatingView.findViewById(R.id.close_btn_expanded);
-        closeButtonExpanded.setOnClickListener((view) -> {
-            collapsedView.setVisibility(View.VISIBLE);
-            expandedView.setVisibility(View.GONE);
-        });
+        closeButtonExpanded.setOnClickListener((view) -> closeExpandedView());
 
         floatingView.findViewById(R.id.root_container).setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
@@ -126,16 +157,46 @@ public class FloatingWidgetService extends Service {
         public void onReceive(Context context, Intent intent) {
             float distance = intent.getFloatExtra(GPSService.DISTANCE, 0);
             speedTV.post(() -> {
-                String speed = String.format(getResources().getConfiguration().locale,"%.02f", countSpeed(distance, GPSService.NOTIFY_INTERVAL));
+                String speed = String.format(getResources().getConfiguration().locale, "%.02f", countSpeed(distance, GPSService.NOTIFY_INTERVAL));
                 speedTV.setText(speed);
             });
         }
     };
 
     private double countSpeed(double distance, long time) {
-        if (MPH)
+        float t = (float) time / 1000;
+        if (units == MPH)
             distance = distance * 0.621;
 
-        return (distance / time) * 3.6;
+        return (distance / t) * 3.6;
+    }
+
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()) {
+                case R.id.mph:
+                    if (((RadioButton) view).isChecked()) {
+                        setUnits(MPH);
+                    }
+                    break;
+                case R.id.kmh:
+                    if (((RadioButton) view).isChecked()) {
+                        setUnits(KMH);
+                    }
+                    break;
+            }
+            closeExpandedView();
+        }
+    };
+
+    private void closeExpandedView() {
+        collapsedView.setVisibility(View.VISIBLE);
+        expandedView.setVisibility(View.GONE);
+    }
+
+    private void setUnits(int unit) {
+        units = unit;
+        preferences.edit().putInt(UNITS, units).commit();
     }
 }

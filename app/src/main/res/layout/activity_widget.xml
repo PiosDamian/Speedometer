@@ -22,9 +22,9 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/ic_android_circle"
                 android:gravity="center"
                 android:textColor="#FFFFFF"
-                android:background="@drawable/ic_android_circle"
                 tools:ignore="ContentDescription" />
 
             <ImageView
@@ -37,43 +37,50 @@
 
         </RelativeLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/expanded_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
-            android:orientation="horizontal"
+            android:gravity="center"
+            android:orientation="vertical"
             android:visibility="gone"
             tools:ignore="ContentDescription">
 
-            <android.support.v7.widget.AppCompatTextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#EEEEEE"
-                android:text="@string/unit_switch"
-                android:layout_margin="8dp"/>
-
-            <Switch
+            <RadioGroup
                 android:id="@+id/units"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" />
-
-            <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/ic_rectangle_no_corners"
+                android:gravity="center"
                 android:orientation="vertical">
 
+                <RadioButton
+                    android:id="@+id/kmh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/km_h"
+                    android:textColor="#FFFFFF" />
 
-                <ImageView
-                    android:id="@+id/close_btn_expanded"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_close"
-                    tools:ignore="ContentDescription" />
-            </RelativeLayout>
+                <RadioButton
+                    android:id="@+id/mph"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/mph"
+                    android:textColor="#FFFFFF" />
+            </RadioGroup>
 
-        </LinearLayout>
+            <ImageView
+                android:id="@+id/close_btn_expanded"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="110dp"
+                android:src="@drawable/ic_close"
+                tools:ignore="ContentDescription" />
+
+        </RelativeLayout>
     </RelativeLayout>
 
 

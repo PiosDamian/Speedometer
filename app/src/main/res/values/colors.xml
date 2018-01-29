@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="closeColor">#000000</color>
-    <color name="crossColor">#FFFFFF</color>
+    <color name="myAccent">#FFFFFF</color>
+    <color name="crossColor">@color/myAccent</color>
     <color name="transparent">#00FFFFFF</color>
 </resources>

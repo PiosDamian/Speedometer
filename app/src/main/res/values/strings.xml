@@ -9,4 +9,6 @@
     <string name="cancel">Cancel</string>
     <string name="gps_dialog_title">GPS disabled</string>
     <string name="gps_not_enable">GPS is not enabled. Do you want to go to settings menu?</string>
+    <string name="km_h">km/h</string>
+    <string name="mph">MPH</string>
 </resources>

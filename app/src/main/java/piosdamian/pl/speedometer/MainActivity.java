@@ -43,17 +43,15 @@ public class MainActivity extends AppCompatActivity {
     private void initializeView() {
         final LocationManager manager = (LocationManager) getSystemService(this.getApplicationContext().LOCATION_SERVICE);
 
-        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+        if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             showSettingsAlert();
-        }
-        findViewById(R.id.notify_me).setOnClickListener(v -> {
-            if (ActivityCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                    ActivityCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        } else {
+            if (ActivityCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    || Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
                 startService();
-            } else {
+            else
                 requestPermissions();
-            }
-        });
+        }
     }
 
     private void requestPermissions() {
@@ -89,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void startService() {
         startService(new Intent(MainActivity.this.getApplicationContext(), FloatingWidgetService.class));
-//        startService(new Intent(MainActivity.this.getApplicationContext(), GPSService.class));
         finish();
     }
 
