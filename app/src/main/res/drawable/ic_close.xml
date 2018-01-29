@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/closeColor" />
+            <size
+                android:width="12dp"
+                android:height="12dp" />
+            <padding
+                android:bottom="1dp"
+                android:left="1dp"
+                android:right="1dp"
+                android:top="1dp" />
+        </shape>
+    </item>
+    <item>
+        <rotate android:fromDegrees="45">
+            <shape android:shape="line">
+                <solid android:color="@color/crossColor" />
+                <stroke
+                    android:width="2dp"
+                    android:color="@color/crossColor" />
+            </shape>
+        </rotate>
+    </item>
+    <item>
+        <rotate android:fromDegrees="135">
+            <shape android:shape="line">
+                <solid android:color="@color/crossColor" />
+                <stroke
+                    android:width="2dp"
+                    android:color="@color/crossColor" />
+            </shape>
+        </rotate>
+    </item>
+</layer-list>

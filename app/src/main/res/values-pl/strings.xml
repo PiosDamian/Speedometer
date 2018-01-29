@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Prędkościomierz</string>
+    <string name="show_speed">Pokaż prędkość</string>
+    <string name="permission_danied">Brak uprawnień do wyświetlania widgetu. Zamykanie aplikacji.</string>
+    <string name="title_activity_main">Uruchom prędkościomierz</string>
+    <string name="settings">Ustawienia</string>
+    <string name="cancel">Anuluj</string>
+    <string name="gps_dialog_title">GPS wyłączony</string>
+    <string name="gps_not_enable">GPS nie jest dostępny. Chcesz przejść do ustawień?</string>
+</resources>
