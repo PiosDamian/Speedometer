@@ -16,7 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import piosdamian.pl.speedometer.service.FloatingWidgetService;
-import piosdamian.pl.speedometer.service.GPSService;
 
 public class MainActivity extends AppCompatActivity {
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;

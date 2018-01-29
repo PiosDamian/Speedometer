@@ -52,14 +52,14 @@
                 android:layout_height="60dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/ic_rectangle_no_corners"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingLeft="15dp">
 
                 <RadioButton
                     android:id="@+id/kmh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:gravity="center_vertical|left"
                     android:text="@string/km_h"
                     android:textColor="#FFFFFF" />
 
@@ -67,7 +67,7 @@
                     android:id="@+id/mph"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:gravity="center_vertical|left"
                     android:text="@string/mph"
                     android:textColor="#FFFFFF" />
             </RadioGroup>
@@ -82,6 +82,4 @@
 
         </RelativeLayout>
     </RelativeLayout>
-
-
 </FrameLayout>
