@@ -16,6 +16,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import piosdamian.pl.speedometer.service.FloatingWidgetService;
+import piosdamian.pl.speedometer.service.GPSService;
+import piosdamian.pl.speedometer.service.StoreService;
 
 public class MainActivity extends AppCompatActivity {
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
@@ -39,6 +41,15 @@ public class MainActivity extends AppCompatActivity {
         initializeView();
     }
 
+    private void setClickListeners(){
+        findViewById(R.id.notify_me).setOnClickListener(v ->
+                startService()
+        );
+        findViewById(R.id.full_output).setOnClickListener(v ->
+                startActivity()
+        );
+    }
+
     private void initializeView() {
         final LocationManager manager = (LocationManager) getSystemService(this.getApplicationContext().LOCATION_SERVICE);
 
@@ -47,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             if (ActivityCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     || Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                startService();
+               setClickListeners();
             else
                 requestPermissions();
         }
@@ -85,8 +96,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startService() {
+        startBackgroundServices();
         startService(new Intent(MainActivity.this.getApplicationContext(), FloatingWidgetService.class));
         finish();
+    }
+
+    private void startActivity() {
+        startBackgroundServices();
+        startActivity(new Intent(MainActivity.this.getApplicationContext(), ChartActivity.class));
+        finish();
+    }
+
+    private void startBackgroundServices() {
+        startService(new Intent(getApplicationContext(), StoreService.class));
+        startService(new Intent(getApplicationContext(), GPSService.class));
     }
 
     private void showSettingsAlert() {

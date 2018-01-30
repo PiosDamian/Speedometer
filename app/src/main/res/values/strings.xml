@@ -11,4 +11,13 @@
     <string name="gps_not_enable">GPS is not enabled. Do you want to go to settings menu?</string>
     <string name="km_h">km/h</string>
     <string name="mph">MPH</string>
+    <string name="show_stats">Show stats</string>
+    <string name="title_activity_chart" translatable="false">ChartActivity</string>
+    <string name="speed_label">Speed</string>
+    <string name="show_widget">Show Widget</string>
+    <string name="time">Time</string>
+    <string name="distance">Distance</string>
+    <string name="current_speed">Current speed</string>
+    <string name="max_speed">Max. speed</string>
+    <string name="avg_speed">Avg. speed</string>
 </resources>

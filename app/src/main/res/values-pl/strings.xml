@@ -10,4 +10,13 @@
     <string name="gps_not_enable">GPS nie jest dostępny. Chcesz przejść do ustawień?</string>
     <string name="km_h">km/h</string>
     <string name="mph">MPH</string>
+    <string name="show_stats">Pokaż statystyki</string>
+    <string name="speed_label">Prędkość</string>
+    <string name="show_widget">Pokaż Widget</string>
+    <string name="time">Czas</string>
+    <string name="distance">Dystans</string>
+    <string name="current_speed">Aktualna prędkość</string>
+    <string name="max_speed">Maksymalna prędkość</string>
+    <string name="avg_speed">Średnia prędkość</string>
+    <string name="turn_on_gps">Włącz GPS</string>
 </resources>

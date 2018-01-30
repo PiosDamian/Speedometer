@@ -12,19 +12,24 @@
         android:roundIcon="@mipmap/speedometer_black"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ChartActivity" />
 
         <service
             android:name=".service.FloatingWidgetService"
             android:enabled="true"
             android:exported="false" />
         <service android:name=".service.GPSService" />
+        <service android:name=".service.StoreService" />
+
     </application>
 
 </manifest>

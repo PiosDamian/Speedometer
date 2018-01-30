@@ -7,15 +7,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatTextView;
-import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -42,6 +37,36 @@ public class FloatingWidgetService extends Service {
     private int units = KMH;
     private SharedPreferences preferences;
     private View collapsedView, expandedView;
+    RadioButton kmhBtn, mphBtn;
+
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()) {
+                case R.id.mph:
+                    if (((RadioButton) view).isChecked()) {
+                        setUnits(MPH);
+                    }
+                    break;
+                case R.id.kmh:
+                    if (((RadioButton) view).isChecked()) {
+                        setUnits(KMH);
+                    }
+                    break;
+            }
+            closeExpandedView();
+        }
+    };
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            double speed = intent.getDoubleExtra(StoreService.CURRENT_SPEED, 0);
+            speedTV.post(() -> {
+                String speedText = String.format(getResources().getConfiguration().locale, "%.02f", speed);
+                speedTV.setText(speedText);
+            });
+        }
+    };
 
     @Nullable
     @Override
@@ -60,25 +85,17 @@ public class FloatingWidgetService extends Service {
         else
             units = pref;
 
-        startService(new Intent(getApplicationContext(), GPSService.class));
-        registerReceiver(broadcastReceiver, new IntentFilter(GPSService.RECEIVER));
+        registerReceiver(broadcastReceiver, new IntentFilter(StoreService.STORE_RECEIVER));
 
         floatingView = LayoutInflater.from(this).inflate(R.layout.activity_widget, null);
         speedTV = floatingView.findViewById(R.id.speed_tv);
 
-        RadioButton kmhBtn, mphBtn;
         kmhBtn = floatingView.findViewById(R.id.kmh);
         mphBtn = floatingView.findViewById(R.id.mph);
         kmhBtn.setOnClickListener(onClickListener);
         mphBtn.setOnClickListener(onClickListener);
 
-        if (units == KMH) {
-            kmhBtn.setChecked(true);
-            mphBtn.setChecked(false);
-        } else {
-            kmhBtn.setChecked(false);
-            mphBtn.setChecked(true);
-        }
+        setUnitChecked();
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -145,8 +162,19 @@ public class FloatingWidgetService extends Service {
         });
     }
 
+    private void setUnitChecked() {
+        if (units == KMH) {
+            kmhBtn.setChecked(true);
+            mphBtn.setChecked(false);
+        } else {
+            kmhBtn.setChecked(false);
+            mphBtn.setChecked(true);
+        }
+    }
+
     private void stopAll() {
         stopService(new Intent(getApplicationContext(), GPSService.class));
+        stopService(new Intent(getApplicationContext(), StoreService.class));
         stopSelf();
     }
 
@@ -161,44 +189,6 @@ public class FloatingWidgetService extends Service {
         unregisterReceiver(broadcastReceiver);
     }
 
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            float distance = intent.getFloatExtra(GPSService.DISTANCE, 0);
-            speedTV.post(() -> {
-                String speed = String.format(getResources().getConfiguration().locale, "%.02f", countSpeed(distance, GPSService.NOTIFY_INTERVAL));
-                speedTV.setText(speed);
-            });
-        }
-    };
-
-    private double countSpeed(double distance, long time) {
-        float t = (float) time / 1000;
-        if (units == MPH)
-            distance = distance * 0.621;
-
-        return (distance / t) * 3.6;
-    }
-
-    View.OnClickListener onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            switch (view.getId()) {
-                case R.id.mph:
-                    if (((RadioButton) view).isChecked()) {
-                        setUnits(MPH);
-                    }
-                    break;
-                case R.id.kmh:
-                    if (((RadioButton) view).isChecked()) {
-                        setUnits(KMH);
-                    }
-                    break;
-            }
-            closeExpandedView();
-        }
-    };
-
     private void closeExpandedView() {
         collapsedView.setVisibility(View.VISIBLE);
         expandedView.setVisibility(View.GONE);
@@ -206,6 +196,7 @@ public class FloatingWidgetService extends Service {
 
     private void setUnits(int unit) {
         units = unit;
+        setUnitChecked();
         preferences.edit().putInt(UNITS, units).commit();
     }
 }

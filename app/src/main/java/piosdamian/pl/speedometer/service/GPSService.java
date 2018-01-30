@@ -19,8 +19,8 @@ import java.util.TimerTask;
  */
 
 public class GPSService extends Service implements LocationListener {
-    public static final String RECEIVER = "piosdamian.pl.receiver";
-    public static final long NOTIFY_INTERVAL = 1500;
+    public static final String DISTANCE_RECEIVER = "piosdamian.pl.distancereceiver";
+    public static final long NOTIFY_INTERVAL = 1000;
     public static final String DISTANCE = "distance";
     private static final String provider = LocationManager.GPS_PROVIDER;
 
@@ -46,7 +46,7 @@ public class GPSService extends Service implements LocationListener {
 
         mTimer = new Timer();
         mTimer.schedule(new TimerTaskToGetLocation(), 5, NOTIFY_INTERVAL);
-        intent = new Intent(RECEIVER);
+        intent = new Intent(DISTANCE_RECEIVER);
         location = null;
         lastLocation = null;
 
