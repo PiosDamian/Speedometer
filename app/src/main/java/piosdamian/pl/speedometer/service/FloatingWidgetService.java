@@ -7,10 +7,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatTextView;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -96,8 +101,7 @@ public class FloatingWidgetService extends Service {
 
         ImageView closeButtonCollapsed = floatingView.findViewById(R.id.close_btn);
         closeButtonCollapsed.setOnClickListener((view) -> {
-            stopService(new Intent(getApplicationContext(), GPSService.class));
-            stopSelf();
+            stopAll();
         });
 
         ImageView closeButtonExpanded = floatingView.findViewById(R.id.close_btn_expanded);
@@ -139,6 +143,11 @@ public class FloatingWidgetService extends Service {
                 return false;
             }
         });
+    }
+
+    private void stopAll() {
+        stopService(new Intent(getApplicationContext(), GPSService.class));
+        stopSelf();
     }
 
     private boolean isViewCollapsed() {
