@@ -5,12 +5,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Created by Damian Pioś on 30.01.2018.
@@ -19,19 +18,26 @@ import java.util.List;
 public class StoreService extends Service {
     public static final String STORE_RECEIVER = "pl.piosdamian.speedreceiver";
     public static final String CURRENT_SPEED = "speed";
-    public static final String SPEED_HISTORY = "speed history";
     public static final String DISTANCE = GPSService.DISTANCE;
     public static final String MAX_SPEED = "max speed";
     public static final String AVG_SPEED = "avg speed";
     public static final String TIME = "time";
 
+    public static final String UNITS = "units";
+    public static final int DEF_PREF = -1;
+    public static final int KMH = 0;
+    public static final int MPH = 1;
+
     private Intent intent;
-    private float overalDistance = 0;
-    private List<Double> speedHistory = new ArrayList<>();
+    private static SharedPreferences preferences;
+    private static int units = KMH;
+
+    private static float overallDistance = 0;
+    private static double topSpeed = 0;
+    private double currentSpeed;
     private double avgSpeed;
     private long timeSinceStart;
     private long startTime;
-    private double topSpeed = 0;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         private long startT = 0, currentT = 0;
@@ -42,32 +48,34 @@ public class StoreService extends Service {
             currentT = new Date().getTime();
 
             float dst = intent.getFloatExtra(GPSService.DISTANCE, 0);
-            overalDistance += dst;
+            if (units == MPH)
+                dst *= 0.621;
+            overallDistance += dst;
             countAvgSpeed();
             timeSinceStart = new Date().getTime() - startTime;
-            if (startT != 0)
-                speedHistory.add(countSpeed(dst, currentT - startT));
-            else
-                speedHistory.add(0.0);
-
+            currentSpeed = countSpeed(dst, currentT - startT);
             update();
         }
 
         private Double countSpeed(float distance, long time) {
-            double speed = 0;
+            double speed;
             if (time != 0) {
                 speed = (distance / (time / 1000)) * 3.6;
-                topSpeed = speed > topSpeed && speed != Double.POSITIVE_INFINITY ? speed : topSpeed;
+                if (speed != Double.POSITIVE_INFINITY && speed != Double.NEGATIVE_INFINITY)
+                    topSpeed = speed > topSpeed && speed != Double.POSITIVE_INFINITY ? speed : topSpeed;
+                else
+                    speed = 0;
+            } else {
+                speed = topSpeed;
             }
-            return speed != Double.POSITIVE_INFINITY ? speed : 0.0;
+            return speed;
         }
 
         private void update() {
-            intent.putExtra(CURRENT_SPEED, speedHistory.get(speedHistory.size() - 1));
-            intent.putExtra(SPEED_HISTORY, speedHistory.toArray(new Double[0]));
+            intent.putExtra(CURRENT_SPEED, currentSpeed);
             intent.putExtra(AVG_SPEED, avgSpeed);
             intent.putExtra(TIME, timeSinceStart);
-            intent.putExtra(DISTANCE, overalDistance);
+            intent.putExtra(DISTANCE, overallDistance);
             intent.putExtra(MAX_SPEED, topSpeed);
             sendBroadcast(intent);
         }
@@ -77,13 +85,45 @@ public class StoreService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        preferences = getSharedPreferences(UNITS, MODE_PRIVATE);
+        int pref = preferences.getInt(UNITS, DEF_PREF);
+        if (pref == DEF_PREF)
+            setUnits(KMH);
+        else
+            setUnits(pref);
+
         startTime = new Date().getTime();
         intent = new Intent(STORE_RECEIVER);
         registerReceiver(broadcastReceiver, new IntentFilter(GPSService.DISTANCE_RECEIVER));
     }
 
     private void countAvgSpeed() {
-        avgSpeed = (overalDistance / (timeSinceStart / 1000)) * 3.6;
+        avgSpeed = (overallDistance / (timeSinceStart / 1000)) * 3.6;
+    }
+
+    private static void setUnits(int unit) {
+        int tmpUnit = units;
+        units = unit;
+        if (tmpUnit != units){
+            if (units == MPH) {
+                overallDistance *= 0.621;
+                topSpeed *= 0.621;
+            }
+            else {
+                overallDistance *= 1.61;
+                topSpeed *= 1.61;
+            }
+        }
+    }
+
+    public static void changeUnits(int unit) {
+        setUnits(unit);
+        if (preferences != null)
+            preferences.edit().putInt(UNITS, units).commit();
+    }
+
+    public static int getUnits() {
+        return units;
     }
 
     @Nullable

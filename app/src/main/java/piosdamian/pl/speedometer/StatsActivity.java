@@ -7,45 +7,48 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatRadioButton;
 import android.support.v7.widget.AppCompatTextView;
+import android.util.Log;
 import android.view.View;
-
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.widget.RadioButton;
 
 import piosdamian.pl.speedometer.service.FloatingWidgetService;
 import piosdamian.pl.speedometer.service.GPSService;
 import piosdamian.pl.speedometer.service.StoreService;
 
+import static piosdamian.pl.speedometer.service.StoreService.KMH;
+import static piosdamian.pl.speedometer.service.StoreService.MPH;
+
 /**
  * Created by Damian Pioś on 30.01.2018.
  */
 
-public class ChartActivity extends AppCompatActivity {
-    LineChart speedChart_lc;
+public class StatsActivity extends AppCompatActivity {
     AppCompatTextView time_tv, distance_tv, currentSpeed_tv, maxSpeed_tv, avgSpeed_tv;
+    AppCompatRadioButton kmhBtn, mphBtn;
 
-    List<Entry> entries = new ArrayList<>();
-    LineDataSet dataSet;
-    boolean foo = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chart);
+        setContentView(R.layout.activity_stats);
         registerReceiver(storeReceiver, new IntentFilter(StoreService.STORE_RECEIVER));
 
-        speedChart_lc = findViewById(R.id.speed_chart);
         time_tv = findViewById(R.id.time);
         distance_tv = findViewById(R.id.distance);
         currentSpeed_tv = findViewById(R.id.current_speed);
         maxSpeed_tv = findViewById(R.id.max_speed);
         avgSpeed_tv = findViewById(R.id.avg_speed);
+
+        kmhBtn = findViewById(R.id.kmh);
+        mphBtn = findViewById(R.id.mph);
+
+        setUnitChecked();
+
+        kmhBtn.setOnClickListener(onClickListener);
+        mphBtn.setOnClickListener(onClickListener);
+
         findViewById(R.id.switch_to_widget).setOnClickListener(switchToWidget);
     }
 
@@ -65,18 +68,12 @@ public class ChartActivity extends AppCompatActivity {
 
     private void setView(Intent intent) {
         resolveBroadcast(intent);
-        if (foo) {
-            setDataSet();
-            refreshView();
-        }
-        foo = false;
     }
 
     private void resolveBroadcast(Intent intent) {
-        intent.getDoubleArrayExtra(StoreService.SPEED_HISTORY);
-        setEntries(new double[]{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5});
+        Log.d(StoreService.CURRENT_SPEED, intent.getDoubleExtra(StoreService.CURRENT_SPEED, 0.0) + "");
         time_tv.post(() ->
-                time_tv.setText(intent.getLongExtra(StoreService.TIME, 0) / 1000 + "")
+                time_tv.setText(intent.getLongExtra(StoreService.TIME, 0) / 1000 + "s")
         );
         distance_tv.post(() ->
                 distance_tv.setText(String.format(getResources().getConfiguration().locale, "%.02f", intent.getFloatExtra(StoreService.DISTANCE, 0)))
@@ -92,29 +89,40 @@ public class ChartActivity extends AppCompatActivity {
         );
     }
 
-    public void setEntries(double[] entry) {
-        int i = 0;
-        for (double data : entry) {
-            entries.add(new Entry(i, (float) data));
-            i++;
-        }
-    }
-
-    public void setDataSet() {
-        dataSet = new LineDataSet(entries, getString(R.string.speed_label));
-    }
-
-    private void refreshView() {
-        LineData lineData = new LineData(dataSet);
-        speedChart_lc.setData(lineData);
-        speedChart_lc.invalidate();
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(storeReceiver);
         stopService(new Intent(getApplicationContext(), GPSService.class));
         stopService(new Intent(getApplicationContext(), StoreService.class));
+    }
+
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()) {
+                case R.id.mph:
+                    if (((RadioButton) view).isChecked()) {
+                        StoreService.changeUnits(MPH);
+                    }
+                    break;
+                case R.id.kmh:
+                    if (((RadioButton) view).isChecked()) {
+                        StoreService.changeUnits(KMH);
+                    }
+                    break;
+            }
+        }
+    };
+
+    private void setUnitChecked() {
+        int units = StoreService.getUnits();
+        if (units == KMH) {
+            kmhBtn.setChecked(true);
+            mphBtn.setChecked(false);
+        } else {
+            kmhBtn.setChecked(false);
+            mphBtn.setChecked(true);
+        }
     }
 }

@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
@@ -21,21 +20,18 @@ import android.widget.RadioButton;
 
 import piosdamian.pl.speedometer.R;
 
+import static piosdamian.pl.speedometer.service.StoreService.KMH;
+import static piosdamian.pl.speedometer.service.StoreService.MPH;
+
 /**
  * Created by Damian Pioś on 25.01.2018.
  */
 
 public class FloatingWidgetService extends Service {
-    private static final String UNITS = "units";
-    private static final int DEF_PREF = -1;
-    private static final int KMH = 0;
-    private static final int MPH = 1;
 
     private WindowManager windowManager;
     private View floatingView;
     private AppCompatTextView speedTV;
-    private int units = KMH;
-    private SharedPreferences preferences;
     private View collapsedView, expandedView;
     RadioButton kmhBtn, mphBtn;
 
@@ -45,18 +41,21 @@ public class FloatingWidgetService extends Service {
             switch (view.getId()) {
                 case R.id.mph:
                     if (((RadioButton) view).isChecked()) {
-                        setUnits(MPH);
+                        StoreService.changeUnits(MPH);
                     }
                     break;
                 case R.id.kmh:
                     if (((RadioButton) view).isChecked()) {
-                        setUnits(KMH);
+                        StoreService.changeUnits(KMH);
                     }
                     break;
             }
-            closeExpandedView();
+            new android.os.Handler().postDelayed(() ->
+                    closeExpandedView(), 500
+            );
         }
     };
+
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -77,13 +76,6 @@ public class FloatingWidgetService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        preferences = getSharedPreferences(UNITS, MODE_PRIVATE);
-        int pref = preferences.getInt(UNITS, DEF_PREF);
-        if (pref == DEF_PREF)
-            units = KMH;
-        else
-            units = pref;
 
         registerReceiver(broadcastReceiver, new IntentFilter(StoreService.STORE_RECEIVER));
 
@@ -163,6 +155,7 @@ public class FloatingWidgetService extends Service {
     }
 
     private void setUnitChecked() {
+        int units = StoreService.getUnits();
         if (units == KMH) {
             kmhBtn.setChecked(true);
             mphBtn.setChecked(false);
@@ -192,11 +185,5 @@ public class FloatingWidgetService extends Service {
     private void closeExpandedView() {
         collapsedView.setVisibility(View.VISIBLE);
         expandedView.setVisibility(View.GONE);
-    }
-
-    private void setUnits(int unit) {
-        units = unit;
-        setUnitChecked();
-        preferences.edit().putInt(UNITS, units).commit();
     }
 }

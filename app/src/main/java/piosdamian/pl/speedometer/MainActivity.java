@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startActivity() {
         startBackgroundServices();
-        startActivity(new Intent(MainActivity.this.getApplicationContext(), ChartActivity.class));
+        startActivity(new Intent(MainActivity.this.getApplicationContext(), StatsActivity.class));
         finish();
     }
 
