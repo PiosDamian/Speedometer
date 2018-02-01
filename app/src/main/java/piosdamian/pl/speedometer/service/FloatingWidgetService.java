@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.AppCompatTextView;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.RadioButton;
 
 import piosdamian.pl.speedometer.R;
+import piosdamian.pl.speedometer.StatsActivity;
 
 import static piosdamian.pl.speedometer.service.StoreService.KMH;
 import static piosdamian.pl.speedometer.service.StoreService.MPH;
@@ -119,12 +121,19 @@ public class FloatingWidgetService extends Service {
         floatingView.findViewById(R.id.root_container).setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
-
+            private final Handler handler = new Handler();
+            private Runnable longPress = new Runnable() {
+                @Override
+                public void run() {
+                    startActivity();
+                }
+            };
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
+                        handler.postDelayed(longPress, 200);
                         initialX = params.x;
                         initialY = params.y;
 
@@ -132,6 +141,7 @@ public class FloatingWidgetService extends Service {
                         initialTouchY = event.getRawY();
                         return true;
                     case MotionEvent.ACTION_UP:
+                        handler.removeCallbacks(longPress);
                         int Xdiff = (int) (event.getRawX() - initialTouchX);
                         int Ydiff = (int) (event.getRawY() - initialTouchY);
 
@@ -144,6 +154,7 @@ public class FloatingWidgetService extends Service {
 
                         return true;
                     case MotionEvent.ACTION_MOVE:
+                        handler.removeCallbacks(longPress);
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
                         windowManager.updateViewLayout(floatingView, params);
@@ -152,6 +163,11 @@ public class FloatingWidgetService extends Service {
                 return false;
             }
         });
+    }
+
+    private void startActivity() {
+        startActivity(new Intent(this, StatsActivity.class));
+        stopSelf();
     }
 
     private void setUnitChecked() {
