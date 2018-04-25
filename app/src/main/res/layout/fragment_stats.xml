@@ -151,37 +151,5 @@
             </LinearLayout>
 
         </android.support.constraint.ConstraintLayout>
-
-        <RadioGroup
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toTopOf="@id/switch_to_widget"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <android.support.v7.widget.AppCompatRadioButton
-                android:id="@+id/kmh"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/km_h" />
-
-            <android.support.v7.widget.AppCompatRadioButton
-                android:id="@+id/mph"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/mph" />
-        </RadioGroup>
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/switch_to_widget"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="16dp"
-            android:text="@string/show_widget"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
     </android.support.constraint.ConstraintLayout>
 </android.support.design.widget.CoordinatorLayout>

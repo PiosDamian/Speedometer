@@ -1,5 +1,6 @@
 package piosdamian.pl.speedometer;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,8 +9,17 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatButton;
+import android.support.v7.widget.AppCompatRadioButton;
+import android.view.View;
+import android.widget.RadioButton;
 
 import piosdamian.pl.speedometer.adapter.ChartsFragment;
+import piosdamian.pl.speedometer.service.FloatingWidgetService;
+import piosdamian.pl.speedometer.service.StoreService;
+
+import static piosdamian.pl.speedometer.service.StoreService.KMH;
+import static piosdamian.pl.speedometer.service.StoreService.MPH;
 
 /**
  * Created by Damian Pioś on 31.01.2018.
@@ -20,6 +30,8 @@ public class StatsActivity extends AppCompatActivity {
 
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
+    AppCompatRadioButton kmhBtn, mphBtn;
+    AppCompatButton startWidget;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,6 +41,17 @@ public class StatsActivity extends AppCompatActivity {
         mPager = findViewById(R.id.stats_pager);
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
+
+        startWidget = findViewById(R.id.switch_to_widget);
+        startWidget.setOnClickListener(switchToWidget);
+
+        kmhBtn = findViewById(R.id.kmh);
+        mphBtn = findViewById(R.id.mph);
+
+        setUnitChecked();
+
+        kmhBtn.setOnClickListener(onClickListener);
+        mphBtn.setOnClickListener(onClickListener);
     }
 
     @Override
@@ -59,6 +82,43 @@ public class StatsActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             return NUM_PAGES;
+        }
+    }
+
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            switch (view.getId()) {
+                case R.id.mph:
+                    if (((RadioButton) view).isChecked()) {
+                        StoreService.changeUnits(MPH);
+                    }
+                    break;
+                case R.id.kmh:
+                    if (((RadioButton) view).isChecked()) {
+                        StoreService.changeUnits(KMH);
+                    }
+                    break;
+            }
+        }
+    };
+
+    private View.OnClickListener switchToWidget = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startService(new Intent(StatsActivity.this.getApplicationContext(), FloatingWidgetService.class));
+            finish();
+        }
+    };
+
+    private void setUnitChecked() {
+        int units = StoreService.getUnits();
+        if (units == KMH) {
+            kmhBtn.setChecked(true);
+            mphBtn.setChecked(false);
+        } else {
+            kmhBtn.setChecked(false);
+            mphBtn.setChecked(true);
         }
     }
 }

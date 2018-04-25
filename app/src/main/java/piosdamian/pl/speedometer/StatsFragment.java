@@ -29,7 +29,7 @@ import static piosdamian.pl.speedometer.service.StoreService.MPH;
 
 public class StatsFragment extends Fragment {
     AppCompatTextView time_tv, distance_tv, currentSpeed_tv, maxSpeed_tv, avgSpeed_tv;
-    AppCompatRadioButton kmhBtn, mphBtn;
+
 
 
     @Nullable
@@ -44,16 +44,6 @@ public class StatsFragment extends Fragment {
         maxSpeed_tv = rootView.findViewById(R.id.max_speed);
         avgSpeed_tv = rootView.findViewById(R.id.avg_speed);
 
-        kmhBtn = rootView.findViewById(R.id.kmh);
-        mphBtn = rootView.findViewById(R.id.mph);
-
-        setUnitChecked();
-
-        kmhBtn.setOnClickListener(onClickListener);
-        mphBtn.setOnClickListener(onClickListener);
-
-        rootView.findViewById(R.id.switch_to_widget).setOnClickListener(switchToWidget);
-
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
@@ -61,13 +51,6 @@ public class StatsFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             setView(intent);
-        }
-    };
-    private View.OnClickListener switchToWidget = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            getActivity().startService(new Intent(getContext().getApplicationContext(), FloatingWidgetService.class));
-            getActivity().finish();
         }
     };
 
@@ -100,34 +83,5 @@ public class StatsFragment extends Fragment {
         getActivity().unregisterReceiver(storeReceiver);
         getActivity().stopService(new Intent(getActivity().getApplicationContext(), GPSService.class));
         getActivity().stopService(new Intent(getActivity().getApplicationContext(), StoreService.class));
-    }
-
-    View.OnClickListener onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            switch (view.getId()) {
-                case R.id.mph:
-                    if (((RadioButton) view).isChecked()) {
-                        StoreService.changeUnits(MPH);
-                    }
-                    break;
-                case R.id.kmh:
-                    if (((RadioButton) view).isChecked()) {
-                        StoreService.changeUnits(KMH);
-                    }
-                    break;
-            }
-        }
-    };
-
-    private void setUnitChecked() {
-        int units = StoreService.getUnits();
-        if (units == KMH) {
-            kmhBtn.setChecked(true);
-            mphBtn.setChecked(false);
-        } else {
-            kmhBtn.setChecked(false);
-            mphBtn.setChecked(true);
-        }
     }
 }
